@@ -6,6 +6,8 @@ use App\Models\ProfileImage;
 use App\Http\Requests\StoreProfileImageRequest;
 use App\Http\Requests\UpdateProfileImageRequest;
 
+use Illuminate\Http\Request;
+
 class ProfileImageController extends Controller
 {
     /**
@@ -15,7 +17,8 @@ class ProfileImageController extends Controller
      */
     public function index()
     {
-        //
+        $profileImages = ProfileImage::all();
+        return view('profileimage.index', ['profileImages' => $profileImages]);
     }
 
     /**
@@ -34,9 +37,25 @@ class ProfileImageController extends Controller
      * @param  \App\Http\Requests\StoreProfileImageRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreProfileImageRequest $request)
+    public function store(Request $request)
     {
-        //
+       $profileImage = new ProfileImage;
+
+       $profileImage->alt = $request->image_alt;
+
+       $imageName = 'image' . time().'.'.$request->image_src->extension();
+
+       $request->image_src->move(public_path('images'), $imageName);
+
+       $profileImage->src =$imageName;
+
+       $profileImage->width = $request->image_width;
+       $profileImage->height = $request->image_height;
+       $profileImage->class = $request->image_class;
+
+       $profileImage->save();
+
+       return 0;
     }
 
     /**
@@ -58,7 +77,7 @@ class ProfileImageController extends Controller
      */
     public function edit(ProfileImage $profileImage)
     {
-        //
+        return view('profileimage.edit',['profileImage'=> $profileImage]);
     }
 
     /**
@@ -68,9 +87,22 @@ class ProfileImageController extends Controller
      * @param  \App\Models\ProfileImage  $profileImage
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateProfileImageRequest $request, ProfileImage $profileImage)
+    public function update(Request $request, ProfileImage $profileImage)
     {
-        //
+      
+        if($request->has('image_src')) {
+            $imageName = 'image' . time().'.'.$request->image_src->extension();
+            $request->image_src->move(public_path('images'), $imageName);
+            $profileImage->src =$imageName;
+        }
+        $profileImage->alt = $request->image_alt;
+        $profileImage->width = $request->image_width;
+        $profileImage->height = $request->image_height;
+        $profileImage->class = $request->image_class;
+
+        $profileImage->save();
+
+        return 0;
     }
 
     /**
